@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
         type : String,
         required : [true, "FirstName is required"],
         set: (value) => validator.escape(value),
+        index : true,  // to index a paticular thing so that we can query fast
     },
     lastName : {
         type : String,
@@ -20,6 +21,7 @@ const userSchema = new mongoose.Schema({
     emailId : {
         type:String,
         required :[true,"The Email is required"],
+        unique :true, // another way of indexing 
         
         // validate: {
         //     validator : customEmailValidation,

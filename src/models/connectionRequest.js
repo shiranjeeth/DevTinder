@@ -31,6 +31,7 @@ connectionRequestschema.pre("save",function(next){
    next();
 })
 
+connectionRequestschema.index({fromUserId : 1,toUserId : 1});     //Compound git status indexing  to make the query run very fast
 const connectionRequestModel = new mongoose.model("ConnectionRequest",connectionRequestschema);
 
 module.exports = connectionRequestModel;
