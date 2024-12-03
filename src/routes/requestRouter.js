@@ -2,7 +2,11 @@ const express = require("express");
 const { userAuth } = require("../middlewares/auth");
 const requestRouter = express.Router();
 const connectionRequestModel = require('../models/connectionRequest.js');
-const User = require("../models/user.js")
+const User = require("../models/user.js");
+const { Connection } = require("mongoose");
+const mongoose = require("mongoose");
+
+
 
 requestRouter.post("/request/send/:status/:touserId",userAuth, async (req,res)=>{
    try{
@@ -32,13 +36,13 @@ requestRouter.post("/request/send/:status/:touserId",userAuth, async (req,res)=>
   //to avoid that the below validation is written
   // this validation is handled by akshay in the schema level check the scjhema level also;
   
-//   const signupUser = await User.findById(toUserId)
-//   console.log(signupUser);
-//   if (signupUser._id.toString() === fromUserId.toString()) {
-//    return res.status(400).json({
-//       message: "You cannot send a request to yourself"
-//    });
-//   }
+  // const signupUser = await User.findById(toUserId)
+  // console.log(signupUser);
+  // if (signupUser._id.toString() === fromUserId.toString()) {
+  //  return res.status(400).json({
+  //     message: "You cannot send a request to yourself"
+  //  });
+  // }
 
     const newConnectionRequest = new connectionRequestModel({
       fromUserId,
@@ -71,6 +75,48 @@ requestRouter.post("/request/send/:status/:touserId",userAuth, async (req,res)=>
 }catch(err){
      res.status(400).send( "ERROR" + err );
    }
+
+})
+
+// think like the users invite recived from others
+// here in the below code we are checking the reqId is from Db to the userId is our logged in ID
+requestRouter.post("/request/review/:status/:requestID",userAuth, async (req,res)=>{
+
+
+  try{
+    const loggedInUser = req.user._id;
+    const {status ,requestID } = req.params;
+  
+  //validation of status
+  const allowedStatus = ["accepted","rejected"];
+  if(!allowedStatus.includes(status)){
+    throw new Error("The status is invalid");
+  }
+  const requestIDObj = new mongoose.Types.ObjectId(requestID);
+//  console.log("ReqID"+requestID);
+ // console.log("loggedInUser"+loggedInUser)
+
+ // validation 
+  const connectionRequest  = await connectionRequestModel.findOne({
+    _id : requestIDObj,
+    toUserId : loggedInUser,
+    status: { $regex: /^interested$/i }
+  })
+  
+  if(!connectionRequest){
+    return res.status(404).json({
+      message : "Connection request not found !"
+    })
+  }
+  connectionRequest.status = status;
+  const data = await connectionRequest.save();
+
+res.status(400).json({
+  message : "Connection request" + status , data 
+})
+  }catch(err){
+    res.status(400).send("ERROR : "+err);
+  }
 
 })
 
