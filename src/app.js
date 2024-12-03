@@ -19,7 +19,7 @@ connectionDB()
     console.log("Server is listening on port 7777");
   })
 }).catch((err)=>{
-  console.err("Database cannot be connected sucessfully")
+  console.log("Database cannot be connected sucessfully" + err)
 })
 
 
