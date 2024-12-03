@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
+
 const connectionRequestschema = new mongoose.Schema({
     fromUserId : {
          type: mongoose.Schema.Types.ObjectId,
          required : true,
+         ref : "User"  // created a reference that this fromUserId is from User Model
     },
     toUserId : {
         type : mongoose.Schema.Types.ObjectId,
