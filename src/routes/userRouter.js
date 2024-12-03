@@ -3,7 +3,9 @@ const express = require("express");
 const userRouter = express.Router();
 const { userAuth }   = require("../middlewares/auth.js");
 const connectionRequestModel = require('../models/connectionRequest.js');
+const { set } = require("mongoose");
 const USER_SAFE_DATA = "firstName lastName age";
+const User = require("../models/user.js");
 
 userRouter.get("/user/requests/received" , userAuth, async (req,res)=>{
 
@@ -23,7 +25,7 @@ userRouter.get("/user/requests/received" , userAuth, async (req,res)=>{
     }
    
 })
-
+//get the users connection
 userRouter.get("/user/connections",userAuth,async (req,res)=>{
     try{
         const loggedInUser = req.user;
@@ -53,7 +55,38 @@ userRouter.get("/user/connections",userAuth,async (req,res)=>{
     }
 })
 
+// get the home page API aka Feed API of the Devtinder
+userRouter.get("/user/feed",userAuth, async (req,res)=>{
+try{
+    const loggedInUser = req.user;
+    const filteredConnections = await connectionRequestModel.find({
+        $or : [
+            {fromUserId : loggedInUser._id },{toUserId : loggedInUser._id}
+        ]
+    }).select("fromUserId , toUserId");
+    const hideFromFeed = new Set()  // set datastructure will not allow duplicated  entry so only
 
+    filteredConnections.forEach((req) =>{
+        hideFromFeed.add(req.fromUserId.toString());
+        hideFromFeed.add(req.toUserId.toString());
+    })
+
+    console.log(hideFromFeed);
+// we are using and $nin aka "not in" $ne aka "not equal to"  validate the users to show in the feed 
+    const users = await User.find({  
+         $and : [
+            { _id: { $nin : Array.from(hideFromFeed)}},
+            {_id: { $ne :  loggedInUser._id}}
+         ]
+    }).select(USER_SAFE_DATA);
+
+    res.status(200).json({
+        data : users
+    })
+}catch(err){
+res.status(400).send(err)
+}
+})
 
 
 
