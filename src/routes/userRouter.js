@@ -59,6 +59,17 @@ userRouter.get("/user/connections",userAuth,async (req,res)=>{
 userRouter.get("/user/feed",userAuth, async (req,res)=>{
 try{
     const loggedInUser = req.user;
+
+    // pagination 
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+
+    // this 50 is the maximum limit of api to be shown for a page 
+    limit = limit > 50 ? 50 : limit;
+
+    const skip = (page -1) * limit;
+
+
     const filteredConnections = await connectionRequestModel.find({
         $or : [
             {fromUserId : loggedInUser._id },{toUserId : loggedInUser._id}
@@ -78,7 +89,7 @@ try{
             { _id: { $nin : Array.from(hideFromFeed)}},
             {_id: { $ne :  loggedInUser._id}}
          ]
-    }).select(USER_SAFE_DATA);
+    }).select(USER_SAFE_DATA).skip(skip).limit(limit); // skip and limit is used for pagination
 
     res.status(200).json({
         data : users
