@@ -53,7 +53,7 @@ authRouter.post('/signup', async (req,res)=>{
          res.cookie("token",token);  
     
     
-      res.send("Login Sucessful");
+      res.send(user);  /// becoz we need the details in the frontend
      }else{
        res.status(400).send("Something went wrong");
      }
