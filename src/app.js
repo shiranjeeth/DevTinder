@@ -3,8 +3,11 @@ const app = express();
 const cors = require("cors")
 const connectionDB = require("./config/database.js");
 const cookieParser = require("cookie-parser");
+const PORT = 7777;
 
-app.use(cors());
+app.use(cors({ origin: "http://localhost:5173",  // whitelist this endpoint to get the user in the cookies also
+  credentials: true }));
+  
 app.use(express.json());
 app.use(cookieParser());
 
@@ -20,8 +23,8 @@ app.use('/', userRouter);
 connectionDB()
 .then(()=>{
   console.log("Database connceted sucessfully")
-  app.listen(7777,()=>{
-    console.log("Server is listening on port 7777");
+  app.listen(PORT,()=>{
+    console.log(`Server is listening on port ${PORT}`);
   })
 }).catch((err)=>{
   console.log("Database cannot be connected" + err)
